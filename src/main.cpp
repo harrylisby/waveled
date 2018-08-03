@@ -158,5 +158,6 @@ void loop(void) {
     switchi = !switchi;
     ESPUI.updateSwitcher("Switch one", switchi);
     oldTime = millis();
+    //yay
   }
 }
