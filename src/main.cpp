@@ -1,5 +1,10 @@
 #include <Arduino.h>
 #include <ESPUI.h>
+#include <EEPROM.h>
+#include "ESPAsyncWiFiManager.h"
+//#include <DNSServer.h>
+//#include <ESP8266WebServer.h>
+//#include <WiFiManager.h>
 
 #if defined(ESP32)
   #include <WiFi.h>
@@ -7,11 +12,16 @@
   #include <ESP8266WiFi.h>
 #endif
 
-const char *ssid = "ESPUI";
-const char *password = "";
+const char *ssid = "Lisby";
+const char *password = "lisby123456";
+const char *ssid2 = "waveled";
 
 long oldTime = 0;
 bool switchi = false;
+byte triesCount = 0;
+
+AsyncWebServer server(80);
+DNSServer dns;
 
 void slider(Control sender, int type) {
   Serial.println(sender.value);
@@ -40,6 +50,7 @@ void buttonExample(Control sender, int type) {
     break;
   }
 }
+
 void padExample(Control sender, int value) {
   switch (value) {
   case P_LEFT_DOWN:
@@ -105,45 +116,49 @@ void otherSwitchExample(Control sender, int value) {
 
 void setup(void) {
   Serial.begin(115200);
-  WiFi.mode(WIFI_AP);
+  AsyncWiFiManager iMngr(&server,&dns);
+  iMngr.autoConnect(ssid2);
 
-  #if defined(ESP32)
-  WiFi.setHostname(ssid);
-  #else
-  WiFi.hostname(ssid);
-  #endif
-
-  WiFi.softAP(ssid);
-  // WiFi.softAP(ssid, password);
+/*
+  WiFi.begin(ssid, password);
   Serial.println("");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.softAPIP());
-
-  // change the beginning to this if you want to join an existing network
-  /*
-     Serial.begin(115200);
-     WiFi.begin(ssid, password);
-     Serial.println("");
-     // Wait for connection
-     while (WiFi.status() != WL_CONNECTED) {
-     delay(500);
-     Serial.print(".");
-     }
-     Serial.println("");
-     Serial.print("IP address: ");
-     Serial.println(WiFi.localIP());
-   */
-
-  ESPUI.label("Status:", COLOR_TURQUOISE, "Stop");
-  ESPUI.label("Millis:", COLOR_EMERALD, "0");
-  ESPUI.button("Push Button", &buttonCallback, COLOR_PETERRIVER);
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    if(triesCount<10){
+      triesCount++;
+    }else if(triesCount>=10){
+      #if defined(ESP32)
+      WiFi.setHostname(ssid2);
+      #else
+      WiFi.hostname(ssid2);
+      #endif
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP(ssid2);
+      // WiFi.softAP(ssid, password);
+      Serial.println("");
+      Serial.print("IP address: ");
+      Serial.println(WiFi.softAPIP());
+      break;
+    }
+  }
+  if(WiFi.status()==WL_CONNECTED){
+    Serial.println("");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+  }
+*/
+  ESPUI.label("Status:", COLOR_WETASPHALT, "Stop");
+  ESPUI.label("Millis:", COLOR_WETASPHALT, "0");
+  ESPUI.button("Push Button", &buttonCallback, COLOR_WETASPHALT);
   ESPUI.button("Other Button", &buttonExample, COLOR_WETASPHALT, "Press");
-  ESPUI.pad("Pad with center", true, &padExample, COLOR_SUNFLOWER);
-  ESPUI.pad("Pad without center", false, &padExample, COLOR_CARROT);
-  ESPUI.switcher("Switch one", false, &switchExample, COLOR_ALIZARIN);
-  ESPUI.switcher("Switch two", true, &otherSwitchExample, COLOR_NONE);
-  ESPUI.slider("Slider one", &slider, COLOR_ALIZARIN, "30");
-  ESPUI.slider("Slider two", &slider, COLOR_NONE, "100");
+  ESPUI.pad("Pad with center", true, &padExample, COLOR_WETASPHALT);
+  ESPUI.pad("Pad without center", false, &padExample, COLOR_WETASPHALT);
+  ESPUI.switcher("Switch one", false, &switchExample, COLOR_WETASPHALT);
+  ESPUI.switcher("Switch two", true, &otherSwitchExample, COLOR_WETASPHALT);
+  ESPUI.slider("Slider one", &slider, COLOR_WETASPHALT, "30");
+  ESPUI.slider("Slider two", &slider, COLOR_WETASPHALT, "100");
 
   /*
      .begin loads and serves all files from PROGMEM directly.
